@@ -2,6 +2,7 @@ const express = require('express');
 const exphbs = require('express-handlebars');
 const http = require('http');
 const socketIo = require('socket.io');
+const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = 8080;
@@ -9,37 +10,40 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 app.use(bodyParser.json());
+
+
 app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
 
 
 const productsDB = [];
 
+
 app.get('/', (req, res) => {
-  res.render('home', { products: productsDB });
+  res.render('index', { products: productsDB });
 });
+
 
 app.get('/realtimeproducts', (req, res) => {
   res.render('realTimeProducts', { products: productsDB });
 });
 
-io.on('connection', (socket) => {
-  console.log('Usuario conectado');
 
+io.on('connection', (socket) => {
+  console.log('Cliente conectado');
+
+  
   socket.on('addProduct', (newProduct) => {
-    
     productsDB.push(newProduct);
-   
-    io.emit('productAdded', newProduct);
+    io.emit('productAdded', newProduct); 
   });
 
+  
   socket.on('deleteProduct', (productId) => {
-    
     const index = productsDB.findIndex((product) => product.id === productId);
     if (index !== -1) {
       productsDB.splice(index, 1);
-      
-      io.emit('productDeleted', productId);
+      io.emit('productDeleted', productId); 
     }
   });
 });
@@ -50,7 +54,7 @@ app.use('/api/products', productsRouter);
 
 productsRouter.get('/', (req, res) => {
   // Ruta para listar todos los productos
-  // ...
+  res.json(productsDB);
 });
 
 productsRouter.get('/:pid', (req, res) => {
