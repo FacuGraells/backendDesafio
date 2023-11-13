@@ -1,0 +1,19 @@
+<h1>Lista de Productos</h1>
+
+<% products.forEach(product => { %>
+  <div>
+    <h3><%= product.nombre %></h3>
+    <p>Precio: <%= product.precio %></p>
+    <p>Categoría: <%= product.categoria %></p>
+    
+
+    
+    <a href="/products/<%= product._id %>">Detalles</a>
+
+   
+    <form action="/carts/<%= cartId %>/add" method="post">
+      <input type="hidden" name="productId" value="<%= product._id %>">
+      <button type="submit">Agregar al carrito</button>
+    </form>
+  </div>
+<% }); %>

@@ -1,0 +1,10 @@
+<h1>Carrito</h1>
+
+<% cart.products.forEach(cartProduct => { %>
+  <div>
+    <h3><%= cartProduct.product.nombre %></h3>
+    <p>Precio: <%= cartProduct.product.precio %></p>
+    <p>Cantidad: <%= cartProduct.quantity %></p>
+    <!-- Otros detalles del producto en el carrito -->
+  </div>
+<% }); %>
