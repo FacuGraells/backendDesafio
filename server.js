@@ -3,9 +3,9 @@ const exphbs = require('express-handlebars');
 const http = require('http');
 const socketIo = require('socket.io');
 const bodyParser = require('body-parser');
-const mysql = require('mysql');
+const mongodb = require('mongodb');
 const mongoose = require('mongoose');
-const ejs = require('ejs');
+
 
 
 const app = express();
@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
 
-app.set('view engine', 'ejs');
+app.set('view engine');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
@@ -312,15 +312,13 @@ app.delete('/api/carts/:cid', async (req, res) => {
 });
 
 
-app.use('/products', productRoutes); 
-app.use('/carts', cartRoutes); 
 
 
 app.get('/products', async (req, res) => {
   try {
     
     const products = await Product.find().limit(10).skip((req.query.page - 1) * 10);
-
+    
     
     res.render('products', { products });
   } catch (error) {
@@ -333,7 +331,7 @@ app.get('/carts/:cid', async (req, res) => {
   try {
     
     const cart = await Cart.findById(req.params.cid).populate('products.product');
-
+    
     
     res.render('cart', { cart });
   } catch (error) {
@@ -351,6 +349,8 @@ server.listen(PORT, () => {
 
 
 
+// app.use('/products', productRoutes); 
+// app.use('/carts', cartRoutes); 
 
 
 
