@@ -1,9 +1,25 @@
 const express = require('express');
+const passport = require('./middleware');
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const GitHubStrategy = require('passport-github').Strategy;
-const User = require('./models/user');
+const JWTStrategy = require('passport-jwt').Strategy;
+const ExtractJWT = require('passport-jwt').ExtractJwt;
+const User = require('../models/user');
+
+const router = express.Router();
+
+const app = express();
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(session({
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: false
+}));
 
 
 passport.serializeUser((user, done) => {
@@ -66,3 +82,40 @@ app.post('/login', passport.authenticate('local', {
     failureRedirect: '/login',
     failureFlash: true
    }));
+
+   passport.use(new LocalStrategy(User.authenticate()));
+
+passport.use(new JWTStrategy({
+    jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+    secretOrKey: 'your_jwt_secret'
+}, async (payload, done) => {
+    try {
+        const user = await User.findById(payload.sub);
+        if (!user) {
+            return done(null, false);
+        }
+        return done(null, user);
+    } catch (error) {
+        return done(error, false);
+    }
+}));
+
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+module.exports = passport;
+
+router.post('/login', passport.authenticate('local'), (req, res) => {
+  res.send({ user: req.user });
+});
+
+router.get('/current', passport.authenticate('jwt', { session: false }), (req, res) => {
+  res.send({ user: req.user });
+});
+
+module.exports = router;
+
+app.listen(3000, () => {
+  console.log('Servidor ejecutándose en el puerto 3000');
+});
